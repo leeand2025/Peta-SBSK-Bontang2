@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Peta POI & Jarak ke CBD</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // 1. Buat peta
+  var map = L.map('map').setView([-0.13, 117.47], 13); // ganti jika perlu
+
+  // 2. Basemap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // 3. Load GeoJSON POI
+  fetch('sbsk_foto5.geojson')
+    .then(response => response.json())
+    .then(data => {
+
+      var poiLayer = L.geoJSON(data, {
+        onEachFeature: function (feature, layer) {
+
+          var p = feature.properties;
+
+          var popupContent =
+            "<b>" + p.nama_satker + "</b><br>" +
+            "Kode Barang: " + p.kode_barang + "<br>" +
+            "NUP: " + p.nup + "<br>" +
+            "Jenis Barang: " + p.jenis_barang + "<br>" +
+            "Luas: " + p.luas_m2 + " m²<br>" +
+            "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b>" +
+            "<img src='" + p.foto + "' width='250'><br><br>";
+
+          layer.bindPopup(popupContent);
+        }
+      }).addTo(map);
+
+      // 4. Zoom ke seluruh POI
+      map.fitBounds(poiLayer.getBounds());
+
+    });
+</script>
+
+</body>
+</html>
