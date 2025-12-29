@@ -1,24 +1,13 @@
 <script>
-  // 1. Buat peta TANPA zoom default
-  var map = L.map('map', {
-    zoomControl: false
-  }).setView([-0.13, 117.48], 13);
+  var map = L.map('map').setView([-0.13, 117.48], 13);
 
-  // 2. Tambahkan zoom control di kanan atas
-  L.control.zoom({
-    position: 'topright'
-  }).addTo(map);
-
-  // 3. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  // 4. Variabel global
   var poiLayer;
   var poiData;
 
-  // 5. Load GeoJSON
   fetch('sbsk_foto5.geojson')
     .then(response => response.json())
     .then(data => {
@@ -27,7 +16,6 @@
       updateMap();
     });
 
-  // 6. Fungsi update filter
   function updateMap() {
 
     if (!poiLayer || !poiData) return;
@@ -70,9 +58,8 @@
 
     geojsonLayer.addTo(poiLayer);
 
-    // Zoom ke data jika ada
     if (poiLayer.getLayers().length > 0) {
-      map.fitBounds(poiLayer.getBounds(), { padding: [30, 30] });
+      map.fitBounds(poiLayer.getBounds());
     }
   }
 </script>
