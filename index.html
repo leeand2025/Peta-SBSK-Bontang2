@@ -1,24 +1,81 @@
-<script>
-  var map = L.map('map').setView([-0.13, 117.48], 13);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Peta POI & Jarak ke CBD</title>
 
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+
+    #panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      z-index: 1000;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="panel">
+  <label>Nama Satker</label><br>
+  <select id="nama_satker" onchange="updateMap()">
+    <option value="all">Semua</option>
+    <option value="POLRES BONTANG">Polres Bontang</option>
+    <option value="KPP Pratama Bontang">KPP Pratama Bontang</option>
+  </select>
+
+  <br><br>
+
+  <label>Jarak ke CBD</label><br>
+  <select id="jarakcbd_km" onchange="updateMap()">
+    <option value="all">Semua</option>
+    <option value="10">≤ 10 km</option>
+    <option value="30">≤ 30 km</option>
+  </select>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // 1. Buat peta TANPA zoom default
+  var map = L.map('map', {
+    zoomControl: false
+  }).setView([-0.13, 117.48], 13);
+
+  // 2. Tambahkan zoom control di kanan atas
+  L.control.zoom({
+    position: 'topright'
+  }).addTo(map);
+
+  // 3. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  var poiLayer;
-  var poiData;
+  var poiLayer = L.layerGroup().addTo(map);
+  var poiData = null;
 
+  // 4. Load GeoJSON
   fetch('sbsk_foto5.geojson')
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
       poiData = data;
-      poiLayer = L.layerGroup().addTo(map);
       updateMap();
     });
 
   function updateMap() {
 
-    if (!poiLayer || !poiData) return;
+    if (!poiData) return;
 
     poiLayer.clearLayers();
 
@@ -26,6 +83,7 @@
     var jarakcbd_km = document.getElementById("jarakcbd_km").value;
 
     var geojsonLayer = L.geoJSON(poiData, {
+
       filter: function (feature) {
 
         if (nama_satker !== "all" &&
@@ -63,3 +121,6 @@
     }
   }
 </script>
+
+</body>
+</html>
