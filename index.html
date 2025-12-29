@@ -1,72 +1,24 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <title>Peta POI & Jarak ke CBD</title>
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-  </style>
-</head>
-<body>
-
-<div id="panel">
-  <label>Nama Satker</label><br>
-  <select id="nama_satker" onchange="updateMap()">
-    <option value="all">Semua</option>
-    <option value="POLRES BONTANG">Polres Bontang</option>
-    <option value="KPP Pratama Bontang">KPP Pratama Bontang</option>
-  </select>
-
-  <br><br>
-
-  <label>Jarak ke CBD</label><br>
-  <select id="jarakcbd_km" onchange="updateMap()">
-    <option value="all">Semua</option>
-    <option value="10">≤ 10 km</option>
-    <option value="30">≤ 30 km</option>
-  </select>
-</div>
-
-<style>
-#panel {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: white;
-  padding: 10px;
-  z-index: 1000;
-  font-size: 13px;
-}
-</style>
-
-<div id="map"></div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
+  // 1. Buat peta TANPA zoom default
   var map = L.map('map', {
     zoomControl: false
   }).setView([-0.13, 117.48], 13);
 
+  // 2. Tambahkan zoom control di kanan atas
   L.control.zoom({
-        position: 'topright'
+    position: 'topright'
+  }).addTo(map);
 
+  // 3. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
+  // 4. Variabel global
   var poiLayer;
   var poiData;
 
+  // 5. Load GeoJSON
   fetch('sbsk_foto5.geojson')
     .then(response => response.json())
     .then(data => {
@@ -75,6 +27,7 @@
       updateMap();
     });
 
+  // 6. Fungsi update filter
   function updateMap() {
 
     if (!poiLayer || !poiData) return;
@@ -117,10 +70,9 @@
 
     geojsonLayer.addTo(poiLayer);
 
+    // Zoom ke data jika ada
     if (poiLayer.getLayers().length > 0) {
-      map.fitBounds(poiLayer.getBounds());
+      map.fitBounds(poiLayer.getBounds(), { padding: [30, 30] });
     }
-  }</script>
-
-</body>
-</html>
+  }
+</script>
