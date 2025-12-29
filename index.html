@@ -17,6 +17,36 @@
 </head>
 <body>
 
+<div id="panel">
+  <label>Nama Satker</label><br>
+  <select id="nama_satker" onchange="updateMap()">
+    <option value="all">Semua</option>
+    <option value="POLRES BONTANG">Polres Bontang</option>
+    <option value="KPP Pratama Bontang">KPP Pratama Bontang</option>
+  </select>
+
+  <br><br>
+
+  <label>Jarak ke CBD</label><br>
+  <select id="jarakcbd_km" onchange="updateMap()">
+    <option value="all">Semua</option>
+    <option value="10">≤ 10 km</option>
+    <option value="30">≤ 30 km</option>
+  </select>
+</div>
+
+<style>
+#panel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  padding: 10px;
+  z-index: 1000;
+  font-size: 13px;
+}
+</style>
+
 <div id="map"></div>
 
 <!-- Leaflet JS -->
@@ -24,7 +54,7 @@
 
 <script>
   // 1. Buat peta
-  var map = L.map('map').setView([-0.13, 117.47], 13); // ganti jika perlu
+  var map = L.map('map').setView([-1.25, 117.50], 13); // ganti jika perlu
 
   // 2. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -32,11 +62,37 @@
   }).addTo(map);
 
   // 3. Load GeoJSON POI
+  var poiLayer;
+  var poiData;
+
   fetch('sbsk_foto5.geojson')
     .then(response => response.json())
     .then(data => {
+      poiData = data;
+      poiLayer = L.layerGroup().addTo(map);
+      updateMap();
+    });
 
-      var poiLayer = L.geoJSON(data, {
+  function updateMap() {
+    poiLayer.clearLayers();
+
+    var nama_satker = document.getElementById("nama_satker").value;
+    var jarakcbd_km = document.getElementById("jarakcbd_km").value;
+
+    L.geoJSON(poiData, {
+    filter: function (feature) {
+
+      if (nama_satker !== "all" &&
+          feature.properties.nama_satker !== nama_satker)
+        return false;
+
+      if (jarakcbd_km !== "all" &&
+          feature.properties.jarakcbd_km > Number(jarakcbd_km))
+        return false;
+
+      return true;
+    },
+
         onEachFeature: function (feature, layer) {
 
           var p = feature.properties;
