@@ -54,8 +54,11 @@
 
 <script>
   var map = L.map('map', {
-         zoomControl: false
-     }).setView([-0.13, 117.48], 13);
+    zoomControl: false
+  }).setView([-0.13, 117.48], 13);
+
+  L.control.zoom({
+        position: 'topright'
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
