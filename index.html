@@ -53,15 +53,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // 1. Buat peta
-  var map = L.map('map').setView([-1.25, 117.50], 13); // ganti jika perlu
+  var map = L.map('map').setView([-0.13, 117.48], 13);
 
-  // 2. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  // 3. Load GeoJSON POI
   var poiLayer;
   var poiData;
 
@@ -74,47 +71,51 @@
     });
 
   function updateMap() {
+
+    if (!poiLayer || !poiData) return;
+
     poiLayer.clearLayers();
 
     var nama_satker = document.getElementById("nama_satker").value;
     var jarakcbd_km = document.getElementById("jarakcbd_km").value;
 
-    L.geoJSON(poiData, {
-    filter: function (feature) {
+    var geojsonLayer = L.geoJSON(poiData, {
+      filter: function (feature) {
 
-      if (nama_satker !== "all" &&
-          feature.properties.nama_satker !== nama_satker)
-        return false;
+        if (nama_satker !== "all" &&
+            feature.properties.nama_satker !== nama_satker)
+          return false;
 
-      if (jarakcbd_km !== "all" &&
-          feature.properties.jarakcbd_km > Number(jarakcbd_km))
-        return false;
+        if (jarakcbd_km !== "all" &&
+            feature.properties.jarakcbd_km > Number(jarakcbd_km))
+          return false;
 
-      return true;
-    },
+        return true;
+      },
 
-        onEachFeature: function (feature, layer) {
+      onEachFeature: function (feature, layer) {
 
-          var p = feature.properties;
+        var p = feature.properties;
 
-          var popupContent =
-            "<b>" + p.nama_satker + "</b><br>" +
-            "Kode Barang: " + p.kode_barang + "<br>" +
-            "NUP: " + p.nup + "<br>" +
-            "Jenis Barang: " + p.jenis_barang + "<br>" +
-            "Luas: " + p.luas_m2 + " m²<br>" +
-            "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b>" +
-            "<img src='" + p.foto + "' width='250'><br><br>";
+        var popupContent =
+          "<b>" + p.nama_satker + "</b><br>" +
+          "Kode Barang: " + p.kode_barang + "<br>" +
+          "NUP: " + p.nup + "<br>" +
+          "Jenis Barang: " + p.jenis_barang + "<br>" +
+          "Luas: " + p.luas_m2 + " m²<br>" +
+          "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b><br>" +
+          "<img src='" + p.foto + "' width='250'>";
 
-          layer.bindPopup(popupContent);
-        }
-      }).addTo(map);
-
-      // 4. Zoom ke seluruh POI
-      map.fitBounds(poiLayer.getBounds());
-
+        layer.bindPopup(popupContent);
+      }
     });
-</script>
+
+    geojsonLayer.addTo(poiLayer);
+
+    if (poiLayer.getLayers().length > 0) {
+      map.fitBounds(poiLayer.getBounds());
+    }
+  }</script>
 
 </body>
 </html>
