@@ -4,13 +4,15 @@
   <meta charset="utf-8">
   <title>Peta POI & Jarak ke CBD</title>
 
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
   <style>
     body { margin: 0; padding: 0; }
     #map { height: 100vh; width: 100%; }
-
     #panel {
       position: absolute;
       top: 10px;
@@ -22,6 +24,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <div id="panel">
@@ -44,37 +47,34 @@
 
 <div id="map"></div>
 
+<!-- ✅ LEAFLET JS (WAJIB SEBELUM SCRIPT ANDA) -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- ✅ SCRIPT ANDA -->
 <script>
-  // 1. Buat peta TANPA zoom default
   var map = L.map('map', {
     zoomControl: false
   }).setView([-0.13, 117.48], 13);
 
-  // 2. Tambahkan zoom control di kanan atas
   L.control.zoom({
     position: 'topright'
   }).addTo(map);
 
-  // 3. Basemap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
   var poiLayer = L.layerGroup().addTo(map);
-  var poiData = null;
+  var poiData;
 
-  // 4. Load GeoJSON
   fetch('sbsk_foto5.geojson')
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => {
       poiData = data;
       updateMap();
     });
 
   function updateMap() {
-
     if (!poiData) return;
 
     poiLayer.clearLayers();
@@ -83,9 +83,7 @@
     var jarakcbd_km = document.getElementById("jarakcbd_km").value;
 
     var geojsonLayer = L.geoJSON(poiData, {
-
       filter: function (feature) {
-
         if (nama_satker !== "all" &&
             feature.properties.nama_satker !== nama_satker)
           return false;
@@ -98,19 +96,17 @@
       },
 
       onEachFeature: function (feature, layer) {
-
         var p = feature.properties;
 
-        var popupContent =
+        layer.bindPopup(
           "<b>" + p.nama_satker + "</b><br>" +
           "Kode Barang: " + p.kode_barang + "<br>" +
           "NUP: " + p.nup + "<br>" +
           "Jenis Barang: " + p.jenis_barang + "<br>" +
           "Luas: " + p.luas_m2 + " m²<br>" +
           "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b><br>" +
-          "<img src='" + p.foto + "' width='250'>";
-
-        layer.bindPopup(popupContent);
+          "<img src='" + p.foto + "' width='250'>"
+        );
       }
     });
 
