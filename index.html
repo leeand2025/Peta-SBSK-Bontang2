@@ -109,7 +109,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
 
-var poiLayer = L.layerGroup().addTo(map);
+var poiLayer = L.featureGroup().addTo(map);
 var poiData;
 var firstLoad = true;
 
