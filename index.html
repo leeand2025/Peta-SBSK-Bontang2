@@ -22,6 +22,30 @@
       z-index: 1000;
       font-size: 13px;
     }
+
+#legend {
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  background: white;
+  padding: 10px;
+  z-index: 1000;
+  font-size: 13px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
   </style>
 </head>
 
@@ -43,6 +67,13 @@
     <option value="10">≤ 10 km</option>
     <option value="30">≤ 30 km</option>
   </select>
+</div>
+
+<div id="legend">
+  <b>Legenda & Statistik</b>
+  <div id="statistik"></div>
+  <div id="legend-items"></div>
+
 </div>
 
 <div id="map"></div>
@@ -74,48 +105,110 @@
       updateMap();
     });
 
-  function updateMap() {
-    if (!poiData) return;
+function updateMap() {
+  if (!poiData) return;
 
-    poiLayer.clearLayers();
+  poiLayer.clearLayers();
 
-    var nama_satker = document.getElementById("nama_satker").value;
-    var jarakcbd_km = document.getElementById("jarakcbd_km").value;
+  var nama_satker = document.getElementById("nama_satker").value;
+  var jarakcbd_km = document.getElementById("jarakcbd_km").value;
 
-    var geojsonLayer = L.geoJSON(poiData, {
-      filter: function (feature) {
-        if (nama_satker !== "all" &&
-            feature.properties.nama_satker !== nama_satker)
-          return false;
+  // COUNTER
+  var total = 0;
+  var count10 = 0;
+  var count30 = 0;
+  var countAbove = 0;
 
-        if (jarakcbd_km !== "all" &&
-            feature.properties.jarakcbd_km > Number(jarakcbd_km))
-          return false;
+  var geojsonLayer = L.geoJSON(poiData, {
 
-        return true;
-      },
+    pointToLayer: function (feature, latlng) {
+      var d = feature.properties.jarakcbd_km;
+      var color = "red";
 
-      onEachFeature: function (feature, layer) {
-        var p = feature.properties;
+      if (d <= 10) color = "green";
+      else if (d <= 30) color = "orange";
 
-        layer.bindPopup(
-          "<b>" + p.nama_satker + "</b><br>" +
-          "Kode Barang: " + p.kode_barang + "<br>" +
-          "NUP: " + p.nup + "<br>" +
-          "Jenis Barang: " + p.jenis_barang + "<br>" +
-          "Luas: " + p.luas_m2 + " m²<br>" +
-          "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b><br>" +
-          "<img src='" + p.foto + "' width='250'>"
-        );
-      }
-    });
+      return L.circleMarker(latlng, {
+        radius: 6,
+        fillColor: color,
+        color: "#333",
+        weight: 1,
+        fillOpacity: 0.9
+      });
+    },
 
-    geojsonLayer.addTo(poiLayer);
+    filter: function (feature) {
 
-    if (poiLayer.getLayers().length > 0) {
-      map.fitBounds(poiLayer.getBounds());
+      if (nama_satker !== "all" &&
+          feature.properties.nama_satker !== nama_satker)
+        return false;
+
+      if (jarakcbd_km !== "all" &&
+          feature.properties.jarakcbd_km > Number(jarakcbd_km))
+        return false;
+
+      return true;
+    },
+
+    onEachFeature: function (feature, layer) {
+
+      total++;
+
+      var d = feature.properties.jarakcbd_km;
+      if (d <= 10) count10++;
+      else if (d <= 30) count30++;
+      else countAbove++;
+
+      var p = feature.properties;
+
+      layer.bindPopup(
+        "<b>" + p.nama_satker + "</b><br>" +
+        "Kode Barang: " + p.kode_barang + "<br>" +
+        "NUP: " + p.nup + "<br>" +
+        "Jenis Barang: " + p.jenis_barang + "<br>" +
+        "Luas: " + p.luas_m2 + " m²<br>" +
+        "Jarak ke CBD: <b>" + p.jarakcbd_km + " km</b><br>" +
+        "<img src='" + p.foto + "' width='250'>"
+      );
     }
+  });
+
+  geojsonLayer.addTo(poiLayer);
+
+  if (poiLayer.getLayers().length > 0) {
+    map.fitBounds(poiLayer.getBounds());
   }
+
+  // UPDATE STATISTIK
+  document.getElementById("statistik").innerHTML =
+    "<b>Total POI:</b> " + total;
+
+  // UPDATE LEGENDA DINAMIS
+  var legendHTML = "";
+
+  if (count10 > 0)
+    legendHTML += `
+      <div class="legend-item">
+        <div class="legend-color" style="background:green"></div>
+        ≤ 10 km : ${count10}
+      </div>`;
+
+  if (count30 > 0)
+    legendHTML += `
+      <div class="legend-item">
+        <div class="legend-color" style="background:orange"></div>
+        10–30 km : ${count30}
+      </div>`;
+
+  if (countAbove > 0)
+    legendHTML += `
+      <div class="legend-item">
+        <div class="legend-color" style="background:red"></div>
+        > 30 km : ${countAbove}
+      </div>`;
+
+  document.getElementById("legend-items").innerHTML = legendHTML;
+}
 </script>
 
 </body>
