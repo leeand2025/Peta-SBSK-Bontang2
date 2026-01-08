@@ -122,7 +122,7 @@ function updateMap() {
   var geojsonLayer = L.geoJSON(poiData, {
 
     pointToLayer: function (feature, latlng) {
-      var d = feature.properties.jarakcbd_km;
+      var d = Number(feature.properties.jarakcbd_km);
       var color = "red";
 
       if (d <= 10) color = "green";
@@ -154,7 +154,7 @@ function updateMap() {
 
       total++;
 
-      var d = feature.properties.jarakcbd_km;
+      var d = Number(feature.properties.jarakcbd_km);
       if (d <= 10) count10++;
       else if (d <= 30) count30++;
       else countAbove++;
