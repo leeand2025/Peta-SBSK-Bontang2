@@ -1,56 +1,60 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <title>Peta POI & Jarak ke CBD</title>
+<meta charset="utf-8">
+<title>Peta POI & Jarak ke CBD</title>
 
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+<!-- Leaflet CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-    #panel {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: white;
-      padding: 10px;
-      z-index: 1000;
-      font-size: 13px;
-    }
+<style>
+  body { margin: 0; padding: 0; }
+  #map { height: 100vh; width: 100%; }
 
-#legend {
-  position: absolute;
-  bottom: 20px;
-  left: 10px;
-  background: white;
-  padding: 10px;
-  z-index: 1000;
-  font-size: 13px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
+  #panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    z-index: 1000;
+    font-size: 13px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-top: 4px;
-}
+  #legend {
+    position: absolute;
+    bottom: 20px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    z-index: 1000;
+    font-size: 13px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
 
-.legend-color {
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-}
-  </style>
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+  }
+</style>
 </head>
 
 <body>
 
+<!-- PANEL FILTER -->
 <div id="panel">
   <label>Nama Satker</label><br>
   <select id="nama_satker" onchange="updateMap()">
@@ -69,43 +73,51 @@
   </select>
 </div>
 
+<!-- LEGENDA & STATISTIK -->
 <div id="legend">
   <b>Legenda & Statistik</b>
   <div id="statistik"></div>
   <div id="legend-items"></div>
-
 </div>
 
+<!-- MAP -->
 <div id="map"></div>
 
-<!-- ✅ LEAFLET JS (WAJIB SEBELUM SCRIPT ANDA) -->
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- ✅ SCRIPT ANDA -->
 <script>
-  var map = L.map('map', {
-    zoomControl: false
-  }).setView([-0.13, 117.48], 13);
+/* =========================
+   INISIALISASI MAP
+========================= */
+var map = L.map('map', {
+  zoomControl: false
+}).setView([-0.13, 117.48], 13);
 
-  L.control.zoom({
-    position: 'topright'
-  }).addTo(map);
+L.control.zoom({ position: 'topright' }).addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
 
-  var poiLayer = L.layerGroup().addTo(map);
-  var poiData;
+var poiLayer = L.layerGroup().addTo(map);
+var poiData;
 
-  fetch('sbsk_foto5.geojson')
-    .then(res => res.json())
-    .then(data => {
-      poiData = data;
-      updateMap();
-    });
+/* =========================
+   LOAD GEOJSON
+========================= */
+fetch('sbsk_foto5.geojson')
+  .then(res => res.json())
+  .then(data => {
+    poiData = data;
+    updateMap();
+  });
 
+/* =========================
+   UPDATE MAP + FILTER
+========================= */
 function updateMap() {
+
   if (!poiData) return;
 
   poiLayer.clearLayers();
@@ -121,7 +133,9 @@ function updateMap() {
 
   var geojsonLayer = L.geoJSON(poiData, {
 
+    // STYLE MARKER
     pointToLayer: function (feature, latlng) {
+
       var d = Number(feature.properties.jarakcbd_km);
       var color = "red";
 
@@ -137,27 +151,30 @@ function updateMap() {
       });
     },
 
+    // FILTER + HITUNG
     filter: function (feature) {
+
+      var d = Number(feature.properties.jarakcbd_km);
 
       if (nama_satker !== "all" &&
           feature.properties.nama_satker !== nama_satker)
         return false;
 
       if (jarakcbd_km !== "all" &&
-          feature.properties.jarakcbd_km > Number(jarakcbd_km))
+          d > Number(jarakcbd_km))
         return false;
+
+      // HITUNG SETELAH LOLOS FILTER
+      total++;
+      if (d <= 10) count10++;
+      else if (d <= 30) count30++;
+      else countAbove++;
 
       return true;
     },
 
+    // POPUP
     onEachFeature: function (feature, layer) {
-
-      total++;
-
-      var d = Number(feature.properties.jarakcbd_km);
-      if (d <= 10) count10++;
-      else if (d <= 30) count30++;
-      else countAbove++;
 
       var p = feature.properties;
 
@@ -179,11 +196,11 @@ function updateMap() {
     map.fitBounds(poiLayer.getBounds());
   }
 
-  // UPDATE STATISTIK
+  // STATISTIK
   document.getElementById("statistik").innerHTML =
     "<b>Total POI:</b> " + total;
 
-  // UPDATE LEGENDA DINAMIS
+  // LEGENDA DINAMIS
   var legendHTML = "";
 
   if (count10 > 0)
